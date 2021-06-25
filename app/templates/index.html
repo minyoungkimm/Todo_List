@@ -1,37 +1,122 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>-->
 
-<html>
+<!--<html>-->
     <head>
-        <title>Demo: TODO</title>
+        <title>TODO LIST</title>
 
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link rel="icon" href="{{ url_for('static', filename='img/cs.ico') }}">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" 
+        <link rel="icon" href="{{ url_for('static', filename='img/checklists_7ya_icon.ico') }}">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.css">
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles/custom.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/custom.css') }}?aaaaaaaaaaaaaaaa">
+
+<!--##########################################################################################################-->
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+
+
 
     </head>
 
+
     <body>
+<!--        <nav style="background-color: #2f3947;height: 60px;width: 100%;border: 0;" class="navtop">-->
+<!--			<div style="display: flex;margin: 0 auto;width: 1000px;height: 100%;">-->
+<!--				<h1 style="display: inline-flex;align-items: center;flex: 1;font-size: 24px;padding: 0;margin: 0;color: #eaebed;font-weight: normal;">FLASK TODO LIST</h1>-->
+<!--                <a class="top" style="display: inline-flex;align-items: center;padding: 0 20px;text-decoration: none;color: #c1c4c8;font-weight: bold;" href="{{ url_for('homepage') }}"><i style="padding: 2px 8px 0 0;" class="fas fa-home"></i>Home</a>-->
+<!--				<a class="top" style="display: inline-flex;align-items: center;padding: 0 20px;text-decoration: none;color: #c1c4c8;font-weight: bold;" href="{{ url_for('profile') }}"><i style="padding: 2px 8px 0 0;" class="fas fa-user-circle"></i>Profile</a>-->
+<!--				<a class="top" style="display: inline-flex;align-items: center;padding: 0 20px;text-decoration: none;color: #c1c4c8;font-weight: bold;" href="{{ url_for('logout') }}"><i style="padding: 2px 8px 0 0;" class="fas fa-sign-out-alt"></i>Logout</a>-->
+<!--			</div>-->
+<!--		</nav>-->
+    <nav class="navtop">
+			<div>
+				<h1 style="display: inline-flex;align-items: center;flex: 1;font-size:24px;padding: 0;margin: 0;color: #eaebed;font-weight: normal;">TODO LIST</h1>
+                <a href="{{ url_for('homepage') }}"><i class="fas fa-home"></i>Home</a>
+				<a href="{{ url_for('profile') }}"><i class="fas fa-user-circle"></i>Profile</a>
+				<a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i>Logout</a>
+			</div>
+    </nav>
+
 
     <main role="main" class="container extra-bottom">
-      <h1 class="mt-5">TODO List Demo App</h1>
-      <p><mark>Do it now.</mark></p>
+        <div class="mt-5">
+            <h1>TODO List</h1>
+            <div class="second">Today : {{dt}}</div>
+        </div>
+        <p><mark>Do it now.</mark></p>
     </main>
-    
 
-    <div class="container">    
-        
+
+    <div class="container">
+
         <!-- Button trigger modal -->
         <div style="text-align: right;">
         <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#task-modal" data-source="New Task">Add Task</button>
         </div>
 
-        
+
+        <!-- Button trigger modal (Delete modal) -->
+        <div class="modal fade" id="delete-modal" tabindex="-1" aria-labelledby="Label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <p class="d-text" style="font-size: large;margin: 0;float:left;"><i class="fa fa-check fa-md" style="float:left;position:relative;bottom:-5px;"></i>&nbsp;&nbsp;Delete?</p>
+                        <p>&nbsp;&nbsp;</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                        <button id="delete-task" type="button" class="btn btn-primary">YES</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Button trigger modal (Detail modal) -->
+        <div class="modal fade" id="detail-modal" tabindex="-1" aria-labelledby="Label" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detailed Information</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <span>
+                            <b style="float: left;">1. Task :&nbsp;</b><p style='float:left;' id='detail-task'></p>
+                        </span>
+                        <br style='clear:both'>
+                        <span>
+                            <b style="float: left;">2. Due Date :&nbsp;</b><p style='float:left;' id='detail-date'></p>
+                        </span>
+                        <br style='clear:both'>
+                        <span><b>3. Detail</b></span>
+                        <div class="input-group mb-3">
+                            <textarea readonly onfocus='resize(this)' style="margin-top:7px; min-height: 5rem; overflow-y: hidden; resize: none;" id="detail-detail" class="form-control" aria-label="task-name" aria-describedby="basic-addon1"></textarea>
+                        </div>
+                        <script>
+                            function resize(obj) {
+                                obj.style.height = "1px";
+                                obj.style.height = (12 + obj.scrollHeight) + "px";
+                            }
+                        </script>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <!-- Button trigger modal (Add & Edit modal) -->
         <div class="modal fade" id="task-modal" tabindex="-1" aria-labelledby="Label" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -41,14 +126,39 @@
             </div>
 
             <div class="modal-body">
-                <div class="input-group mb-3">
+                <div class="input-group mb-4">
                     <span class="input-group-text" id="task-form-display">Task</span>
                     <input type="text" class="form-control" placeholder="Description of task" aria-label="task-name" aria-describedby="basic-addon1">
                 </div>
+                <div class = "input-group">
+                    <span class="input-group-text" id="detail-form-display">Detail</span>
+                </div>
+                <textarea onkeydown='resize(this)' onfocus='resize(this)' style="margin-bottom:25px;" id='detail1' class="form-control" placeholder="Description of detail" aria-label="task-name" aria-describedby="basic-addon1"></textarea>
+                    <script>
+                        function resize(obj) {
+                            obj.style.height = "1px";
+                            obj.style.height = (12 + obj.scrollHeight) + "px";
+                        }
+                    </script>
+
+<!--                <div class = "col-12 col-sm-7 mt-2">-->
+                <div class="input-group mb-4">
+                <!-- 날짜 -->
+                    <span class="input-group-text" id="date-form-display">Due date</span>
+                    <input type="text" class="form-control" id="date1" placeholder="Select deadline"/>
+                </div>
+
+                <script>
+                    $("#date1").datepicker({dateFormat: 'yy-mm-dd'});
+                </script>
+                <style>
+                    #ui-datepicker-div{z-index:1151 !important;}
+                </style>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button id="submit-task" type="button" class="btn btn-primary">Save changes</button>
+                <button id="submit-task" type="button" class="btn btn-primary" data-source="{{user}}">Apply</button>
             </div>
             </div>
         </div>
@@ -57,56 +167,80 @@
     </div>
 
     <!--Todo Table-->
-    <div class="container table-responsive">          
-    <table class="table">
+    <div class="container table-responsive">
+    <table class="table table-hover">
         <thead>
         <tr>
+
             <th class="task-id">#</th>
             <th class="task">Task Name</th>
+            <th class="due">Due date</th>
+            <th class="detail">Detail</th>
             <th class="status">Status</th>
-            <th class="update">Edit</th>
-            <th class="update">Remove</th>
+            <th class="update">Edit/Delete</th>
+
         </tr>
         </thead>
 
         <tbody>
-        {% for item in items %}
+
+        {% for item in items.items %}
+
             <tr>
-                <td>{{item.id}}</td>
-                <td>{{item.task}}</td>
+<!--                <td>{{item.index}}</td>-->
+                <td>{{item[1]}}</td>
+                <td>{{item[0].task}}</td>
+                <td>{{item[0].due.strftime('%Y-%m-%d')}}</td>
+                <td><button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#detail-modal" data-source="{{item[0].task}}" data-contents="{{item[0].detail}}" data-content="{{item[0].due.strftime('%Y-%m-%d')}}">detail</button></td>
 
-                {% if item.status == "In Progress" %}
-                    <td><button type="button" class="btn btn-outline-warning btn-sm state" data-source="{{item.id}}">{{item.status}}</button></td>
+                {% if item[0].status == "In progress" %}
+                    <td><button type="button" class="btn btn-outline-warning btn-sm state" data-source="{{item[0].id}}">{{item[0].status}}</button></td>
                 {%endif%}
-                {% if item.status == "Todo" %}
-                    <td><button type="button" class="btn btn-outline-secondary btn-sm state" data-source="{{item.id}}">{{item.status}}</button></td>
+                {% if item[0].status == "Todo" %}
+                    <td><button type="button" class="btn btn-outline-secondary btn-sm state" data-source="{{item[0].id}}">{{item[0].status}}</button></td>
                 {%endif%}
-                {% if item.status == "Complete" %}
-                    <td><button type="button" class="btn btn-outline-success btn-sm state" data-source="{{item.id}}">{{item.status}}</button></td>
+                {% if item[0].status == "Complete" %}
+                    <td><button type="button" class="btn btn-outline-success btn-sm state" data-source="{{item[0].id}}">{{item[0].status}}</button></td>
                 {%endif%}
-                
-                <td><button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#task-modal" data-source="{{item.id}}" data-content="{{item.task}}"><i class="fa fa-pen fa-1" aria-hidden="true"></i></button></td>
 
-                <td><button class="btn btn-outline-secondary btn-sm remove" data-source="{{item.id}}" type="button"><i class="fa fa-trash fa-1" aria-hidden="true"></i></button></td>
+
+                <td>
+                    <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#task-modal" data-source="{{item[0].id}}" data-contents="{{item[0].task}}" data-content="{{item[0].due.strftime('%Y-%m-%d')}}" data-detail="{{item[0].detail}}"><i class="fa fa-pen fa-1" aria-hidden="true"></i></button>
+                    <button id="test" type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#delete-modal" data-source="{{item[0].id}}"><i class="fa fa-trash fa-1" aria-hidden="true"></i></button>
+                </td>
+
             </tr>
         {% endfor %}
-        
+
         </tbody>
+
     </table>
+
+        {% if items.has_next or items.has_prev %}
+            {% if items.has_prev %}<a href="{{ url_for('homepage', page=items.prev_num) }}">&lt;&lt; Prev</a>{% else %}&lt;&lt; prev{% endif %} |
+            {% if items.has_next %}<a href="{{ url_for('homepage', page=items.next_num) }}">Next &gt;&gt;</a>{% else %}Next &gt;&gt;{% endif %}
+        {% endif %}
+        {% if items.items|length == 0 %}
+        <h4 style="color:#8c8c8c;text-align:center;">Add task!</h4>
+        {% endif %}
+
     </div>
 
 
 
     <footer class="footer">
-      <div class="container">
-            <p class="text-muted"><small>App developed for CS411 UIUC by @tcheng10</small></p>
-      </div>
+
+            <p style="float:right;margin-right:30px;font-size:20px;" class="text-muted"><small>Developed by minyoung</small></p>
+
     </footer>
+
+
   </body>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
-    <script src="{{ url_for('static', filename='script/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='script/modal.js') }}?version=3333341333322333333"></script>
 
 </html>
+

@@ -1,86 +1,114 @@
 """Defines all the functions related to the database"""
 from app import db
+from app.model import User, Task
+from werkzeug.security import check_password_hash
+import pandas as pd
+from sqlalchemy.sql import text
 
-def fetch_todo() -> dict:
-    """Reads all tasks listed in the todo table
 
-    Returns:
-        A list of dictionaries
+def fetch_todo(username,page) -> dict:
+
+
+    # result = Task.query.filter(Task.username == username).paginate(page=page, per_page=5)
+    idx = 5*(page-1)
+    db.session.execute('SET @row_number = {}'.format(idx))
+    row_number_column = "(@row_number:=@row_number + 1) AS row_num"
+    result = Task.query.filter(Task.username == username
+                               ).order_by(Task.id.desc()
+                                          ).add_column(text(row_number_column)
+                                                       ).paginate(page, per_page=5)
+
+
+    return result
+
+
+
+
+
+def update_task_entry(task_id: int, text: str, detail: str ,due: str, user: str) -> None:
     """
+        주어진 args로 task, detail, due, username 업데이트
 
-    conn = db.connect()
-    query_results = conn.execute("Select * from tasks;").fetchall()
-    conn.close()
-    todo_list = []
-    for result in query_results:
-        item = {
-            "id": result[0],
-            "task": result[1],
-            "status": result[2]
-        }
-        todo_list.append(item)
-
-    return todo_list
-
-
-def update_task_entry(task_id: int, text: str) -> None:
-    """Updates task description based on given `task_id`
-
-    Args:
-        task_id (int): Targeted task_id
-        text (str): Updated description
-
-    Returns:
-        None
+        Returns: None
     """
+    result = Task.query.filter(Task.id == task_id).first()
+    result.task = text
+    result.detail = detail
+    result.due = due
+    result.username = user
+    db.session.commit()
 
-    conn = db.connect()
-    query = 'Update tasks set task = "{}" where id = {};'.format(text, task_id)
-    conn.execute(query)
-    conn.close()
 
 
-def update_status_entry(task_id: int, text: str) -> None:
-    """Updates task status based on given `task_id`
-
-    Args:
-        task_id (int): Targeted task_id
-        text (str): Updated status
-
-    Returns:
-        None
+def update_status_entry(task_id:int, text: str) -> None:
     """
+        주어진 args로 status 업데이트
 
-    conn = db.connect()
-    query = 'Update tasks set status = "{}" where id = {};'.format(text, task_id)
-    conn.execute(query)
-    conn.close()
-
-
-def insert_new_task(text: str) ->  int:
-    """Insert new task to todo table.
-
-    Args:
-        text (str): Task description
-
-    Returns: The task ID for the inserted entry
+        Returns: None
     """
+    result = Task.query.filter(Task.id == task_id).first()
+    result.status = text
+    db.session.commit()
 
-    conn = db.connect()
-    query = 'Insert Into tasks (task, status) VALUES ("{}", "{}");'.format(
-        text, "Todo")
-    conn.execute(query)
-    query_results = conn.execute("Select LAST_INSERT_ID();")
-    query_results = [x for x in query_results]
-    task_id = query_results[0][0]
-    conn.close()
 
-    return task_id
+def insert_new_task(text:str, detail:str, due:str, user:str) -> None:
+    """
+        새로운 값 추가
+
+        Returns: 새로 추가된 task ID
+    """
+    due = pd.to_datetime(due)
+    result = Task(task=text, detail=detail, due=due, username=user,status='Todo')
+
+    db.session.add(result)
+    db.session.commit()
 
 
 def remove_task_by_id(task_id: int) -> None:
-    """ remove entries based on task ID """
-    conn = db.connect()
-    query = 'Delete From tasks where id={};'.format(task_id)
-    conn.execute(query)
-    conn.close()
+    """ 지우기 """
+    result = Task.query.filter(Task.id == task_id).first()
+    db.session.delete(result)
+    db.session.commit()
+
+
+
+
+def remove_all(username: str) -> None:
+    """ 지우기 """
+    print(username)
+    result = User.query.filter(User.username == username).first()
+    print(result)
+    db.session.delete(result)
+    db.session.commit()
+
+    result = Task.query.filter(Task.username == username).all()
+    for res in result:
+        db.session.delete(res)
+        db.session.commit()
+
+
+
+##################################### 회원 계정 #############################################
+
+
+def login_check(username:str, password:str) -> None:
+
+    result = User.query.filter(User.username == username).first()
+    if result and check_password_hash(result.password,password):
+        return result
+    return None
+
+
+def username_check(username:str) -> None:
+    result = User.query.filter(User.username == username).first()
+    return result
+
+def id_check(user_id:int) -> None:
+    result = User.query.filter(User.id==user_id).first()
+    return result
+
+
+def make_account(username:str, password:str, email:str) -> None:
+    result = User(username=username, password=password, email=email)
+    db.session.add(result)
+    db.session.commit()
