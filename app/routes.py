@@ -3,6 +3,8 @@ from flask import render_template, request, jsonify, redirect, url_for, session
 from app import app, database as db_helper
 import re
 import datetime as dt
+from flask import current_app
+
 
 
 
@@ -25,15 +27,19 @@ def login():
         if account:
             # 세션 정보로 다른 라우트에 접근
             session['loggedin'] = True
-            session['id'] = account.id
+            # session['id'] = account.id
             session['username'] = account.username
             # 홈페이지로 리다이렉트
             return redirect(url_for('homepage'))
         else:
             # 계정이 없거나 ID/PW 틀렸을때 메시지
             msg = 'Incorrect username or password!'
+            password = ''
+            current_app.logger.info('account not found')
+    else:
+        username, password = '',''
 
-    return render_template('login.html', msg=msg)
+    return render_template('login.html', msg=msg, username=username, password=password)
 
 
 # 로그아웃
@@ -41,7 +47,7 @@ def login():
 def logout():
     # 세션정보 지우고 로그아웃
    session.pop('loggedin', None)
-   session.pop('id', None)
+   # session.pop('id', None)
    session.pop('username', None)
    # 로그인 페이지로 리다이렉트
    return redirect(url_for('login'))
@@ -66,10 +72,13 @@ def register():
         # 존재하는 계정에는 에러 메시지 / 유효성 체크
         if account:
             msg = 'Account already exists!'
+            # username, password, email = '', '', ''
         elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
             msg = 'Invalid email address!'
+            email = ''
         elif not re.match(r'[A-Za-z0-9가-힣]+', username):
             msg = 'Username must contain only characters and numbers!'
+            username = ''
         else:
             # 계정이 존재하지 않고 유효성 통과하면, user 테이블에 새로운 계정 추가
 
@@ -77,8 +86,11 @@ def register():
 
             msg = 'You have successfully registered!'
 
+    else:
+        username, password, email = '','',''
+
     # 메시지와 함께 등록 폼 보여주기
-    return render_template('register.html', msg=msg)
+    return render_template('register.html', msg=msg, username=username, password=password, email=email)
 
 
 # 회원 정보
@@ -87,7 +99,7 @@ def profile():
     # 사용자가 로그인 했는지 체크
     if 'loggedin' in session:
         # 사용자 정보로 프로필 페이지 보여주기
-        account = db_helper.id_check(session['id'])
+        account = db_helper.username_check(session['username'])
         return render_template('profile.html', account=account)
     # 로그인 하지 않았을 때는 로그인 페이지로 리다이렉트
     return redirect(url_for('login'))

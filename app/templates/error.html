@@ -4,10 +4,12 @@
 		<meta charset="utf-8">
 		<title>secession</title>
 		<title>{% block title %}{% endblock %}</title>
-		<link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+
+
+		<link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}?aa">
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css">
 	</head>
-	<body class="loggedin">
+	<body style="background-color:white;">
 		<nav class="navtop">
 			<div>
 				<h1 style="display: inline-flex;align-items: center;flex: 1;font-size:24px;padding: 0;margin: 0;color: #eaebed;font-weight: normal;">TODO LIST</h1>
@@ -16,7 +18,7 @@
 		</nav>
 		<div class="content">
 			<h2 style="display:center;">Account deletion complete</h2>
-            <div>
+            <div style="background-color:#f3f4f7;" class="profile">
 				Account deletion is complete.<br>Thank you for using our service so far.
             </div>
 
